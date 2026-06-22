@@ -19,9 +19,15 @@ typedef struct Reactivo{
 
 Reactivo* crearReactivo(){
     Reactivo *nuevo = (Reactivo*)malloc(sizeof(Reactivo));
+    if(nuevo == NULL){
+        printf("Error de memoria.\n");
+        exit(1);
+    }
     nuevo->ant = NULL;
     nuevo->sig = NULL;
     nuevo->respuestaUsuario = 0;
+    nuevo->correcta = 0;
+    nuevo->puntos = 0;
     return nuevo;
 }
 
@@ -65,14 +71,13 @@ void agregarReactivo(Reactivo **inicio){
     fgets(nuevo->op4,200,stdin);
     limpiarCadena(nuevo->op4);
 
-    printf("Respuesta correcta (1-4): ");
-    scanf("%d",&nuevo->correcta);
-
+    do{
+        printf("Respuesta correcta (1-4): ");
+        scanf("%d",&nuevo->correcta);
+    }while(nuevo->correcta < 1 || nuevo->correcta > 4);
     printf("Puntos: ");
     scanf("%f",&nuevo->puntos);
-
     insertarFinal(inicio,nuevo);
-
     printf("\nReactivo agregado.\n");
 }
 
@@ -166,7 +171,7 @@ void modificarExamen(Reactivo **inicio){
         return;
     }
     Reactivo *actual = *inicio;
-    char op;
+    int op;
     do{
         printf("\n === REACTIVO ACTUAL ===");
 
@@ -180,64 +185,60 @@ void modificarExamen(Reactivo **inicio){
         printf("\n\nRespuesta correcta: %d", actual->correcta);
         printf("\nPuntos: %.2f\n", actual->puntos);
 
-        printf("\n[a] Anterior");
-        printf("\n[d] Siguiente");
-        printf("\n[m] Modificar reactivo");
-        printf("\n[n] Agregar reactivo");
-        printf("\n[s] Guardar y salir");
+        printf("\nAnterior.....................1");
+        printf("\nSiguiente....................2");
+        printf("\nModificar reactivo...........3");
+        printf("\nAgregar reactivo.............4");
+        printf("\nGuardar y salir..............5");
 
         printf("\n\nOpcion: ");
-        scanf(" %c", &op);
+        scanf("%d",&op);
         switch(op){
-            case 'a': if(actual->ant != NULL){
-                          actual = actual->ant;
-                      }else{
-                          printf("\nYa estas en el primer reactivo.\n");
-                      }
-                      break;
+            case 1: if(actual->ant != NULL){
+                        actual = actual->ant;
+                    }else{
+                        printf("\nYa estas en el primer reactivo.\n");
+                    }
+                    break;
+            case 2: if(actual->sig != NULL){
+                        actual = actual->sig;
+                    }else{
+                        printf("\nYa estas en el ultimo reactivo.\n");
+                    }
+                    break;
+            case 3: getchar();
+                    printf("\nNueva pregunta: ");
+                    fgets(actual->pregunta,500,stdin);
+                    limpiarCadena(actual->pregunta);
 
-            case 'd': if(actual->sig != NULL){
-                          actual = actual->sig;
-                      }else{
-                          printf("\nYa estas en el ultimo reactivo.\n");
-                      }
-                      break;
+                    printf("Nueva opcion 1: ");
+                    fgets(actual->op1,200,stdin);
+                    limpiarCadena(actual->op1);
+                      
+				    printf("Nueva opcion 2: ");
+                    fgets(actual->op2,200,stdin);
+                    limpiarCadena(actual->op2);
 
-            case 'm': getchar();
-                      printf("\nNueva pregunta: ");
-                      fgets(actual->pregunta,500,stdin);
-                      limpiarCadena(actual->pregunta);
+                    printf("Nueva opcion 3: ");
+                    fgets(actual->op3,200,stdin);
+                    limpiarCadena(actual->op3);
 
-                      printf("Nueva opcion 1: ");
-                      fgets(actual->op1,200,stdin);
-                      limpiarCadena(actual->op1);
- 
-                      printf("Nueva opcion 2: ");
-                      fgets(actual->op2,200,stdin);
-                      limpiarCadena(actual->op2);
-
-                      printf("Nueva opcion 3: ");
-                      fgets(actual->op3,200,stdin);
-                      limpiarCadena(actual->op3);
-
-                      printf("Nueva opcion 4: ");
-                      fgets(actual->op4,200,stdin);
-                      limpiarCadena(actual->op4);
-
-                      printf("Respuesta correcta (1-4): ");
-                      scanf("%d",&actual->correcta);
-
-                      printf("Puntos: ");
-                      scanf("%f",&actual->puntos);
-
-                      printf("\nReactivo actualizado correctamente.\n");
-                      break;
-
-            case 'n': agregarReactivo(inicio);
-                      printf("\nReactivo agregado al final del examen.\n");
-                      break;
+                    printf("Nueva opcion 4: ");
+                    fgets(actual->op4,200,stdin);
+                    limpiarCadena(actual->op4);
+                    do{
+                        printf("Respuesta correcta (1-4): ");
+                        scanf("%d",&actual->correcta);
+                    }while(actual->correcta < 1 || actual->correcta > 4);
+                    printf("Puntos: ");
+                    scanf("%f",&actual->puntos);
+                    printf("\nReactivo actualizado correctamente.\n");
+                    break;
+            case 4: agregarReactivo(inicio);
+                    printf("\nReactivo agregado al final del examen.\n");
+                    break;
         }
-    }while(op!='s');
+    }while(op!=5);
 }
 
 void aplicarExamen(Reactivo *inicio){
@@ -255,13 +256,13 @@ void aplicarExamen(Reactivo *inicio){
         printf("3) %s\n",actual->op3);
         printf("4) %s\n",actual->op4);
 
-        printf("\nRespuesta: ");
-        scanf("%d",&actual->respuestaUsuario);
-
-        printf("\n[a] Anterior");
-        printf("\n[d] Siguiente");
-        printf("\n[f] Finalizar");
-
+        do{
+            printf("\nRespuesta (1-4): ");
+            scanf("%d",&actual->respuestaUsuario);
+        }while(actual->respuestaUsuario < 1 || actual->respuestaUsuario > 4);
+        printf("\n[a] ... Anterior");
+        printf("\n[d] ... Siguiente");
+        printf("\n[f] ... Finalizar");
         printf("\nOpcion: ");
         scanf(" %c",&nav);
 
@@ -283,10 +284,13 @@ void aplicarExamen(Reactivo *inicio){
         aux = aux->sig;
     }
     printf("\n === RESULTADO FINAL === \n");
-    printf("\n========================");
     printf("\nPuntos obtenidos: %.2f",obtenidos);
     printf("\nPuntos totales: %.2f",total);
-    printf("\nPorcentaje: %.2f%%\n",(obtenidos*100)/total);
+    if(total > 0){
+        printf("\nPorcentaje: %.2f%%\n",(obtenidos*100)/total);
+    }else{
+        printf("\nPorcentaje: 0.00%%\n");
+    }
 }
 
 void liberarLista(Reactivo *inicio){
@@ -313,6 +317,9 @@ int main(){
         switch(opc){
             case 1: printf("\nNombre archivo: ");
                     scanf("%s",archivo);
+                    if(examen!=NULL){
+                        liberarLista(examen);
+                    }
                     examen = NULL;
                     int cantidad;
                     printf("Cantidad de reactivos: ");
@@ -326,8 +333,12 @@ int main(){
 
             case 2: printf("\nArchivo a cargar: ");
                     scanf("%s",archivo);
+                    if(examen!=NULL){
+                        liberarLista(examen);
+                        examen = NULL;
+                    }
                     examen = cargarExamen(archivo);
-                    if(examen != NULL){
+                    if(examen!=NULL){
                         modificarExamen(&examen);
                         guardarExamen(archivo, examen);
                     }else{
@@ -337,6 +348,10 @@ int main(){
 
             case 3: printf("\nArchivo a aplicar: ");
                     scanf("%s",archivo);
+                    if(examen != NULL){
+                        liberarLista(examen);
+                        examen = NULL;
+                    }
                     examen = cargarExamen(archivo);
                     if(examen){
                         aplicarExamen(examen);
@@ -344,6 +359,7 @@ int main(){
                         printf("\nNo existe archivo.\n");
                     }
 					break;
+			default: printf("\nOpcion no valida.\n"); break;		
         }
     }while(opc!=4);
     liberarLista(examen);
